@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, Switch, Link } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import axios from 'axios';
 import './App.css';
 import Header from './components/Header';
@@ -7,38 +7,60 @@ import Home from './components/Home';
 import ListBeer from './components/ListBeer';
 import RandomBeer from './components/RandomBeer';
 import NewBeer from './components/NewBeer';
+import DetailsBeer from './components/DetailsBeer';
 
 
 class App extends Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
 
     this.state = {
-      beers: '' 
+      beers: [],
+      beerFound: '',
+      randomBeer: ''
     }
+
+    this.findItem= this.findItem.bind(this)
+  }
+
+  handleListComponent = () => <ListBeer beers={this.state.beers} />
+  handleRandomBeer = () => <RandomBeer randomBeer={this.state.randomBeer} />
+  handleDetailsBeer = (props) => <DetailsBeer beers={this.state.beers} props={props} findItem={this.findItem}  />
+  
+  findItem(id) {
+    let copyBeers = [...this.state.beers]
+    const beerFound = copyBeers.find((item) => {
+        return item._id === id
+    })
+    console.log(copyBeers)
+    console.log(beerFound)
+    this.setState({beerFound: beerFound})
   }
 
   componentDidMount() {
-    let allBeers = [];
     axios.get('https://ih-beer-api.herokuapp.com/beers')
-      .then(function (response) {
-        console.log(response.data)
-        allBeers.push(response.data)
+      .then((response) => {
+        this.setState({ beers: response.data })
       }).catch(error => console.log(error))
-    this.setState({beers: allBeers})
-    console.log(this.state.beers);
-  }
 
-  render() {
+    axios.get('https://ih-beer-api.herokuapp.com/beers/random')
+    .then((response) => {
+      this.setState({ randomBeer: response.data })
+    }).catch(error => console.log(error))
+  }
+    
+    render() {
+    
     return (
       <div className="App">
         <div>
           <Header />
           <Switch>
             <Route exact path="/" component={Home} />
-            <Route exact path="/beers" component={ListBeer} />
-            <Route exact path="/random" component={RandomBeer} />
+            <Route exact path="/beers" render={this.handleListComponent} />
+            <Route path="/beers/:id" render={this.handleDetailsBeer} />
+            <Route exact path="/random" render={this.handleRandomBeer} />
             <Route exact path="/new" component={NewBeer} />
           </Switch>
         </div>

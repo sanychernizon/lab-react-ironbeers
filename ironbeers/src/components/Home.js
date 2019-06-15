@@ -5,7 +5,7 @@ class Home extends Component {
 
     render() {
         return (
-            <div>
+            <div className="home">
                 <ul>
                     <li>
                         <Link to="/beers">All Beers</Link>
